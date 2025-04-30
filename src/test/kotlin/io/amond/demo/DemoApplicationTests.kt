@@ -22,6 +22,7 @@ class DemoApplicationTests {
         it.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     }
     val DEFAULT_LOCALE: Locale = Locale.JAPAN
+    val zoneOffset = 9
 
     @Test
     fun sliceMap() {
@@ -36,6 +37,48 @@ class DemoApplicationTests {
 
 
         println(tagIds)
+    }
+
+    @Test
+    fun nowTest() {
+        val nowInstant = Instant.now()
+
+        val plus = nowInstant.plus(7, ChronoUnit.DAYS)
+        println(plus)
+
+//
+//        // 현재 UTC 시간에서 날짜만 추출
+//        val localDate = nowInstant.atOffset(ZoneOffset.UTC).toLocalDate()
+//
+//        // 해당 날짜에 15:00:00을 추가한 LocalDateTime 생성
+//        val localDateTime = LocalDateTime.of(localDate, LocalTime.of(15, 0))
+//
+//        // LocalDateTime을 UTC 기준으로 Instant로 변환
+//        val instantAt15: Instant = localDateTime.toInstant(ZoneOffset.UTC)
+//        println(instantAt15)
+        val DEFAULT_LOCALE: Locale = Locale.KOREA
+        val DEFAULT_LANGUAGE: String = DEFAULT_LOCALE.language
+        println(DEFAULT_LOCALE.country)
+        println(DEFAULT_LANGUAGE.toString())
+
+
+    }
+
+    @Test
+    fun timeTest() {
+        val now = Instant.now()
+        val koreaDateTime = now.atZone(ZoneId.of("Asia/Seoul"))
+        val recurringDate = koreaDateTime.plus(6
+            , ChronoUnit.DAYS).format(DateTimeFormatter.ofPattern("yyyyMMdd"))
+        println(recurringDate)
+
+        val dayPlus = Instant.parse("2025-04-02T02:14:43Z") // 'T' 구분자와 'Z' 시간대 정보 추가
+        val dayPlusDateTime = dayPlus.atZone(ZoneId.of("Asia/Seoul"))
+
+        // 날짜 형식 지정
+        val dayPlusDate = dayPlusDateTime.format(DateTimeFormatter.ofPattern("yyyyMMdd"))
+        println(dayPlusDate)
+
     }
 
     @Test
@@ -84,7 +127,8 @@ class DemoApplicationTests {
 //
 //        println(preEndAt)
 
-        val dateFormatPattern = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssz").withZone(ZoneOffset.ofHours(zoneOffset))
+        val dateFormatPattern =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssz").withZone(ZoneOffset.ofHours(zoneOffset))
 //        val nowString = Instant.parse("2025-01-22T15:04:46.903274Z")
 //        val koreaDateTime = nowString.atZone(ZoneId.of("Asia/Seoul"))
 //        val nowStringParse = koreaDateTime.plus(1, ChronoUnit.MONTHS).format(DateTimeFormatter.ofPattern("yyyyMMdd"))
@@ -155,35 +199,34 @@ class DemoApplicationTests {
 //        println(result)
     }
 
-//    @Test
-//    fun listTest() {
-//        val membershipContents = listOf(
-//            MembershipContentReq(1, Instant.parse("2024-07-01T06:47:21.230+00:00")),
-//            MembershipContentReq(3, Instant.parse("2024-10-01T06:47:21.230+00:00")),
-//            MembershipContentReq(4, Instant.parse("2024-10-01T06:47:21.230+00:00")),
-//            MembershipContentReq(2, Instant.parse("2024-12-01T06:47:21.230+00:00")),
-//            MembershipContentReq(2, Instant.parse("2024-11-01T06:47:21.230+00:00")),
-//            MembershipContentReq(2, Instant.parse("2024-11-01T06:47:21.230+00:00")),
-//        ).associate { it.membershipId to it.startAt }
-//
-//        val memberships = listOf(
-//            Membership(1, "BASIC"),
-//            Membership(2, "BASIC_FAMILY")
-//        ).associateBy { it.id }
-//        val membershipContentList: MutableList<MembershipInfo> = mutableListOf()
-//        membershipContents.map { membershipContent ->
-//            if (memberships.containsKey(membershipContent.key)) {
-//                val membershipContentInfo = MembershipInfo(
-//                    membership = memberships[membershipContent.key]!!,
-//                    startAt = membershipContents[membershipContent.key]!!,
-//                )
-//
-//                membershipContentList.add(membershipContentInfo)
-//            }
-//
-//        }
-//        println(membershipContentList)
-//    }
+    @Test
+    fun listTest() {
+        val membershipContents = listOf(
+            MembershipContentReq(1, Instant.parse("2024-10-01T05:47:21.230+00:00"), Instant.parse("2025-10-01T05:47:21.230+00:00")),
+            MembershipContentReq(1, Instant.parse("2024-12-01T06:47:21.230+00:00"), Instant.parse("2025-10-01T05:47:21.230+00:00")),
+            MembershipContentReq(2, Instant.parse("2025-01-01T06:47:21.230+00:00"), Instant.parse("2025-10-01T05:47:21.230+00:00")),
+            MembershipContentReq(1, Instant.parse("2024-10-01T06:47:21.230+00:00"), Instant.parse("2025-10-01T05:47:21.230+00:00")),
+        ).associate { it.membershipId to (it.startAt to it.endAt) }
+        println(membershipContents)
+        val memberships = listOf(
+            Membership(1, "BASIC", BigDecimal(12900)),
+            Membership(2, "BASIC_FAMILY", BigDecimal(12900))
+        ).associateBy { it.id }
+        val membershipContentList: MutableList<MembershipInfo> = mutableListOf()
+        membershipContents.map { membershipContent ->
+            if (memberships.containsKey(membershipContent.key)) {
+                val membershipContentInfo = MembershipInfo(
+                    membership = memberships[membershipContent.key]!!,
+                    startAt = membershipContents[membershipContent.key]!!.first,
+                    endAt = membershipContents[membershipContent.key]!!.second,
+                )
+
+                membershipContentList.add(membershipContentInfo)
+            }
+
+        }
+        println(membershipContentList)
+    }
 
 //    @Test
 //    fun splitMap() {
@@ -236,10 +279,10 @@ class DemoApplicationTests {
     @Test
     fun minList() {
         val list = listOf(
-            MembershipContentReq(1, Instant.parse("2024-10-01T05:47:21.230+00:00")),
-            MembershipContentReq(1, Instant.parse("2024-12-01T06:47:21.230+00:00")),
-            MembershipContentReq(2, Instant.parse("2025-01-01T06:47:21.230+00:00")),
-            MembershipContentReq(1, Instant.parse("2024-10-01T06:47:21.230+00:00")),
+            MembershipContentReq(1, Instant.parse("2024-10-01T05:47:21.230+00:00"), Instant.parse("2025-10-01T05:47:21.230+00:00")),
+            MembershipContentReq(1, Instant.parse("2024-12-01T06:47:21.230+00:00"), Instant.parse("2025-10-01T05:47:21.230+00:00")),
+            MembershipContentReq(2, Instant.parse("2025-01-01T06:47:21.230+00:00"), Instant.parse("2025-10-01T05:47:21.230+00:00")),
+            MembershipContentReq(1, Instant.parse("2024-10-01T06:47:21.230+00:00"), Instant.parse("2025-10-01T05:47:21.230+00:00")),
         )
 
         val orderContentIds = list
@@ -254,7 +297,7 @@ class DemoApplicationTests {
     }
 
     @Test
-    fun locale(){
+    fun locale() {
         val DEFAULT_LOCALE: Locale = Locale.KOREA
         val DEFAULT_LANGUAGE: String = DEFAULT_LOCALE.language
 
@@ -262,15 +305,16 @@ class DemoApplicationTests {
     }
 
     @Test
-    fun calculate(){
-       val membershipPrice = BigDecimal("12900.00")
+    fun calculate() {
+        val membershipPrice = BigDecimal("12900.00")
         val VAT: BigDecimal = BigDecimal("1.1")
         val CARD_FEE: BigDecimal = BigDecimal("0.97")
         val platFormMembershipPrice = membershipPrice.div(VAT).multiply(CARD_FEE).setScale(1, RoundingMode.DOWN)
         println(platFormMembershipPrice)
         val membershipUsingTotalDate = 28
 
-        val price = platFormMembershipPrice.divide(membershipUsingTotalDate.toBigDecimal(), 10, RoundingMode.DOWN).setScale(1, RoundingMode.DOWN)
+        val price = platFormMembershipPrice.divide(membershipUsingTotalDate.toBigDecimal(), 10, RoundingMode.DOWN)
+            .setScale(1, RoundingMode.DOWN)
 //        val price = fruitPrice.div(date.toBigDecimal())
 //
 //// 첫째 자리까지 자르기
@@ -278,6 +322,7 @@ class DemoApplicationTests {
 
         println(price)
     }
+
     @Test
     fun test() {
         val response =
@@ -341,6 +386,7 @@ class DemoApplicationTests {
     data class MembershipInfo(
         var membership: Membership,
         var startAt: Instant,
+        var endAt: Instant,
     )
 
     data class Sum(
@@ -351,6 +397,7 @@ class DemoApplicationTests {
     data class MembershipContentReq(
         var membershipId: Long,
         var startAt: Instant,
+        var endAt: Instant,
     )
 
     data class MembershipInfoMembership(
