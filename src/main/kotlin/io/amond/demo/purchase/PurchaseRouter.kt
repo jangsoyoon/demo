@@ -1,24 +1,20 @@
-package io.amond.demo.test
+package io.amond.demo.purchase
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.server.coRouter
+import java.awt.PageAttributes
 
 @Configuration
-class TestRouter {
-    val basePath = "/fruit"
-
+class PurchaseRouter {
+    val basePath = "/api/v1/purchase"
     @Bean
-    fun testRoute(handler: TestHandler) = coRouter {
+    fun purchaseRoute(purchaseHandler: PurchaseHandler) = coRouter {
         path(basePath).nest {
             accept(MediaType.APPLICATION_JSON).nest {
-                GET("", handler::test)
-                POST("", handler::create)
-                PUT("", handler::update)
+                GET("", purchaseHandler::purchase)
             }
         }
     }
-
-
 }

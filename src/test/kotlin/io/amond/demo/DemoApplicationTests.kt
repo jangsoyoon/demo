@@ -24,6 +24,28 @@ class DemoApplicationTests {
     val DEFAULT_LOCALE: Locale = Locale.JAPAN
     val zoneOffset = 9
 
+
+    @Test
+    fun forPlus() {
+        var maxSortPosition = 0.0
+
+        (1..5).map { index ->
+            maxSortPosition += 1
+        }
+        println(maxSortPosition)
+    }
+
+    @Test
+    fun appendTest() {
+        val str = "EP."
+
+
+        (1..5).map { index ->
+            var title = StringBuilder(str).append("%02d".format(index))
+            println(title)
+        }
+    }
+
     @Test
     fun sliceMap() {
         var ids = "1,2,3,4,5,6,7,8,9,10,11"
@@ -68,8 +90,9 @@ class DemoApplicationTests {
     fun timeTest() {
         val now = Instant.now()
         val koreaDateTime = now.atZone(ZoneId.of("Asia/Seoul"))
-        val recurringDate = koreaDateTime.plus(6
-            , ChronoUnit.DAYS).format(DateTimeFormatter.ofPattern("yyyyMMdd"))
+        val recurringDate = koreaDateTime.plus(
+            6, ChronoUnit.DAYS
+        ).format(DateTimeFormatter.ofPattern("yyyyMMdd"))
         println(recurringDate)
 
         val dayPlus = Instant.parse("2025-04-02T02:14:43Z") // 'T' 구분자와 'Z' 시간대 정보 추가
@@ -200,12 +223,66 @@ class DemoApplicationTests {
     }
 
     @Test
+    fun convertUnixTime() {
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")
+        val localDateTime = LocalDateTime.parse("2025-06-09 08:11:11.625376", formatter)
+        val epochMilli = localDateTime.toInstant(ZoneOffset.UTC).toEpochMilli()
+        println(epochMilli)
+
+//        val list = listOf(
+//            test(1, "A", Membership(1, "BASIC")),
+//            test(1, "B", Membership(1, "BASIC")),
+//            test(1, "A", Membership(2, "BASIC_FAMILY")),
+//            test(2, "A", Membership(2, "BASIC_FAMILY")),
+//            test(2, "B", Membership(1, "BASIC")),
+//        )
+//        val result = list.distinctBy { Pair(it.id, it.membership) }.groupBy { it.id }
+//        println(result)
+    }
+
+    @Test
+    fun unixTime() {
+        val now = LocalDate.now()
+        // 오늘 속한 달의 첫 번째 날
+        val firstDayOfThisMonth = now.withDayOfMonth(1)
+
+        // 지난달의 지난달 마지막 날
+        val lastDayOfLastLastMonth = firstDayOfThisMonth.minusMonths(1).withDayOfMonth(1).minusDays(1)
+
+
+        val startAt = lastDayOfLastLastMonth.atTime(15, 0)
+        val endAt = firstDayOfThisMonth.atTime(15, 0)
+
+        println(startAt)
+        println(endAt)
+
+        val startAtUnixTimeMillis = startAt.toInstant(ZoneOffset.UTC).toEpochMilli()
+        val endAtUnixTimeMillis = endAt.toInstant(ZoneOffset.UTC).toEpochMilli()
+    }
+
+    @Test
     fun listTest() {
         val membershipContents = listOf(
-            MembershipContentReq(1, Instant.parse("2024-10-01T05:47:21.230+00:00"), Instant.parse("2025-10-01T05:47:21.230+00:00")),
-            MembershipContentReq(1, Instant.parse("2024-12-01T06:47:21.230+00:00"), Instant.parse("2025-10-01T05:47:21.230+00:00")),
-            MembershipContentReq(2, Instant.parse("2025-01-01T06:47:21.230+00:00"), Instant.parse("2025-10-01T05:47:21.230+00:00")),
-            MembershipContentReq(1, Instant.parse("2024-10-01T06:47:21.230+00:00"), Instant.parse("2025-10-01T05:47:21.230+00:00")),
+            MembershipContentReq(
+                1,
+                Instant.parse("2024-10-01T05:47:21.230+00:00"),
+                Instant.parse("2025-10-01T05:47:21.230+00:00")
+            ),
+            MembershipContentReq(
+                1,
+                Instant.parse("2024-12-01T06:47:21.230+00:00"),
+                Instant.parse("2025-10-01T05:47:21.230+00:00")
+            ),
+            MembershipContentReq(
+                2,
+                Instant.parse("2025-01-01T06:47:21.230+00:00"),
+                Instant.parse("2025-10-01T05:47:21.230+00:00")
+            ),
+            MembershipContentReq(
+                1,
+                Instant.parse("2024-10-01T06:47:21.230+00:00"),
+                Instant.parse("2025-10-01T05:47:21.230+00:00")
+            ),
         ).associate { it.membershipId to (it.startAt to it.endAt) }
         println(membershipContents)
         val memberships = listOf(
@@ -228,7 +305,82 @@ class DemoApplicationTests {
         println(membershipContentList)
     }
 
-//    @Test
+    @Test
+    fun distinctByMembershipId() {
+        val membershipContents = listOf(
+            MembershipContentReq(
+                1,
+                Instant.parse("2025-05-27T05:47:21.230+00:00"),
+                Instant.parse("2025-06-27T15:00:00.000+00:00")
+            ),
+            MembershipContentReq(
+                1,
+                Instant.parse("2025-06-27T06:47:21.230+00:00"),
+                Instant.parse("2025-07-27T15:00:00.000+00:00")
+            ),
+            MembershipContentReq(
+                2,
+                Instant.parse("2025-01-01T06:47:21.230+00:00"),
+                Instant.parse("2025-10-01T05:47:21.230+00:00")
+            ),
+            MembershipContentReq(
+                1,
+                Instant.parse("2024-10-01T06:47:21.230+00:00"),
+                Instant.parse("2025-10-01T05:47:21.230+00:00")
+            ),
+        ).sortedByDescending { it.startAt }.distinctBy { it.membershipId }
+
+        println(membershipContents)
+    }
+
+    @Test
+    fun stringEquals() {
+        val DEFAULT_CONTENT_ITEM_VIDEO_DATA_URL: String = "오픈 예정"
+
+        val contentItemVideo = ContentItemVideo(
+            dataUrl = "오픈 예정 "
+        )
+
+        if (contentItemVideo.dataUrl.equals(DEFAULT_CONTENT_ITEM_VIDEO_DATA_URL)) {
+            println("equals")
+        }
+    }
+
+    @Test
+    fun multiplyBigDecimalAppend() {
+        val DEFAULT_CONTENT_ITEM_ALL_TITLE: String = "전편"
+        val entireProductGuaranteeDuration = 30
+        val entireProductDiscountRate = "1.00".toBigDecimal()
+        val result = StringBuilder(DEFAULT_CONTENT_ITEM_ALL_TITLE).append(
+            " (${entireProductGuaranteeDuration}일, ${
+                entireProductDiscountRate.multiply(BigDecimal("1")).toLong()
+            }% OFF)"
+        ).toString()
+
+        println(result)
+    }
+
+    @Test
+    fun multiplyBigDecimal() {
+        val originPrice = "60".toBigDecimal()
+        val discountRate = "0.20".toBigDecimal()
+//        val discount = originPrice.multiply(discountRate).setScale(0, RoundingMode.DOWN)
+//        val result = originPrice.subtract(discount)
+
+        val discountPrice = if (discountRate != BigDecimal.ZERO) {
+            originPrice.multiply(discountRate).setScale(0, RoundingMode.DOWN)
+        } else {
+            BigDecimal.ZERO
+        }
+
+        val price = originPrice.subtract(discountPrice)
+
+        println(discountPrice)
+        println(discountRate)
+        println(price)
+    }
+
+    //    @Test
 //    fun splitMap() {
 //        val membershipInfos: MutableList<MembershipInfo> = mutableListOf()
 //        val test = "1&2024-07-01T06:47:21.230+00:00,2&2024-10-01T06:47:21.230+00:00"
@@ -244,6 +396,100 @@ class DemoApplicationTests {
 //
 //        println(membershipInfos)
 //    }
+    @Test
+    fun dateTimeTest() {
+        val local = LocalDate.now()
+        println(local)
+    }
+
+    @Test
+    fun checkNicknameValid() {
+        val nicknamePattern = "^[^'\"-;*?/&=#%+.\\s]+$"
+        val nickName = "앙녕"
+        val nicknameValid = Regex(nicknamePattern)
+        println(nicknameValid.matches(nickName))
+    }
+
+    @Test
+    fun checkUrlValid() {
+//        val urlPattern = "^(https?://)?[\\w.-]+\\.[a-z]{2,6}(/[^\\s]*)?$"
+        val youtubeUrlPattern = "^(https?://)?(www\\.)?(youtube\\.com/watch\\?v=|youtu\\.be/)[A-Za-z0-9_-]{11}(&\\S*)?$"
+//        val url = "https://www.youtube.com/watch?v=nCG7ZkBfr6I"
+        val url = "https://www.naver.com"
+        val urlValid = Regex(youtubeUrlPattern)
+        println(urlValid.matches(url))
+    }
+
+    @Test
+    fun filterCheckTest() {
+
+        val contentItemId: Long = 6
+        val contentItems = listOf(
+            ContentItem(id = 1, isFinalEpisode = false),
+            ContentItem(id = 2, isFinalEpisode = false),
+            ContentItem(id = 3, isFinalEpisode = false),
+            ContentItem(id = 4, isFinalEpisode = false),
+            ContentItem(id = 5, isFinalEpisode = false),
+            ContentItem(id = 6, isFinalEpisode = true),
+        )
+
+        val findContentItem = contentItems.filter { it.isFinalEpisode && it.id != contentItemId }
+        println(findContentItem)
+
+    }
+
+    @Test
+    fun priceTest() {
+        val singleProductPrice = BigDecimal("4")
+//        val episodeCountTitle = 8;
+        val originPrice = BigDecimal("30")
+        val discountRate = BigDecimal("0.15")
+        val discountPrice = if (discountRate != BigDecimal.ZERO) {
+            originPrice.multiply(discountRate).setScale(0, RoundingMode.DOWN)
+        } else {
+            BigDecimal.ZERO
+        }
+
+        val price = originPrice.subtract(discountPrice)
+
+        println(price)
+        println(discountPrice)
+    }
+
+    @Test
+    fun inputKeySortTest() {
+        val keys = listOf(
+            "AUTO_SINGLE_INITIAL_123_2025-06-25T01:00:00Z_3242",
+            "AUTO_SINGLE_INITIAL_123_2025-06-25T03:00:00Z_22224",
+            "AUTO_SINGLE_INITIAL_123_2025-06-25T02:00:00Z_33354363"
+        )
+
+        val sorted = keys.sorted()
+        println(sorted)
+    }
+
+    @Test
+    fun payStartAt() {
+        val now = Instant.now()
+
+
+        val list = listOf(
+            ProductContentItem(Instant.parse("2025-06-13T00:00:00.000+00:00")),
+            ProductContentItem(Instant.parse("2025-07-13T00:00:00.000+00:00")),
+            ProductContentItem(Instant.parse("2025-08-13T00:00:00.000+00:00")),
+            ProductContentItem(Instant.parse("2025-09-13T00:00:00.000+00:00")),
+            ProductContentItem(Instant.parse("2025-10-13T00:00:00.000+00:00")),
+            ProductContentItem(Instant.parse("2025-05-13T00:00:00.000+00:00")),
+            ProductContentItem(Instant.parse("2025-12-13T00:00:00.000+00:00"))
+        )
+
+        val filterList = list.filter { it.payStartAt?.isBefore(now) == true }
+        if (filterList.isNotEmpty()) {
+            println("에러")
+        } else {
+            println(filterList)
+        }
+    }
 
     @Test
     fun findMin() {
@@ -255,7 +501,6 @@ class DemoApplicationTests {
             Membership(5, "E", BigDecimal(5000)),
             Membership(6, "F", BigDecimal(5500))
         )
-
         val minBy = list.minBy { it.priceKrw }
         println(minBy)
     }
@@ -279,10 +524,26 @@ class DemoApplicationTests {
     @Test
     fun minList() {
         val list = listOf(
-            MembershipContentReq(1, Instant.parse("2024-10-01T05:47:21.230+00:00"), Instant.parse("2025-10-01T05:47:21.230+00:00")),
-            MembershipContentReq(1, Instant.parse("2024-12-01T06:47:21.230+00:00"), Instant.parse("2025-10-01T05:47:21.230+00:00")),
-            MembershipContentReq(2, Instant.parse("2025-01-01T06:47:21.230+00:00"), Instant.parse("2025-10-01T05:47:21.230+00:00")),
-            MembershipContentReq(1, Instant.parse("2024-10-01T06:47:21.230+00:00"), Instant.parse("2025-10-01T05:47:21.230+00:00")),
+            MembershipContentReq(
+                1,
+                Instant.parse("2024-10-01T05:47:21.230+00:00"),
+                Instant.parse("2025-10-01T05:47:21.230+00:00")
+            ),
+            MembershipContentReq(
+                1,
+                Instant.parse("2024-12-01T06:47:21.230+00:00"),
+                Instant.parse("2025-10-01T05:47:21.230+00:00")
+            ),
+            MembershipContentReq(
+                2,
+                Instant.parse("2025-01-01T06:47:21.230+00:00"),
+                Instant.parse("2025-10-01T05:47:21.230+00:00")
+            ),
+            MembershipContentReq(
+                1,
+                Instant.parse("2024-10-01T06:47:21.230+00:00"),
+                Instant.parse("2025-10-01T05:47:21.230+00:00")
+            ),
         )
 
         val orderContentIds = list
@@ -417,4 +678,29 @@ class DemoApplicationTests {
         var resultInfos: String? = null,
     )
 
+    data class ContentItemVideo(
+        var dataUrl: String,
+    )
+
+    data class ProductContentItem(
+        var payStartAt: Instant? = null,
+    )
+
+    data class ContentItem(
+        var id: Long,
+        var isFinalEpisode: Boolean,
+    )
+
+    data class Content(
+        var id: Long,
+        var event: Event,
+    )
+
+    data class Event(
+        var id: Long,
+    )
+
+    data class Product(
+        var id: Long,
+    )
 }

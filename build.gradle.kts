@@ -6,6 +6,7 @@ plugins {
     id("org.springframework.boot") version "3.3.5"
     id("io.spring.dependency-management") version "1.1.6"
     kotlin("plugin.jpa") version "1.9.25"
+    kotlin("kapt") version "1.9.25"
 }
 
 group = "io.amond"
@@ -33,6 +34,17 @@ dependencies {
     testImplementation("io.projectreactor:reactor-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    implementation("com.vladmihalcea:hibernate-types-60:2.21.1")
+    implementation("org.apache.commons:commons-lang3")
+    implementation("com.querydsl:querydsl-jpa:5.0.0:jakarta")
+    implementation("com.querydsl:querydsl-core:5.0.0")
+    kapt("com.querydsl:querydsl-apt:5.0.0:jakarta")
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("com.google.firebase:firebase-admin:9.2.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
+    implementation("io.github.microutils:kotlin-logging-jvm:3.0.4")
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
+
 }
 
 kotlin {
